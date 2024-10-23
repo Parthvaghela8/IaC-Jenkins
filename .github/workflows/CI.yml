@@ -1,4 +1,9 @@
-on: push
+name: CI
+
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   launch_jenkins_job:
@@ -7,5 +12,5 @@ jobs:
     steps:
       - name: Trigger Jenkins Job
         run: |
-          curl -X POST {{ secrets.JENKINS_IP }}/job/${{ secrets.JENKINS_JOB }}/build \
-          --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}
+          curl -X POST "${{ secrets.JENKINS_IP }}/job/${{ secrets.JENKINS_JOB }}/build" \
+          --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
