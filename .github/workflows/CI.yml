@@ -20,7 +20,7 @@ jobs:
           echo "ENVIRONMENT=$(jq -r .environment config.json)" >> $GITHUB_ENV
           echo "TERRAFORM_ACTION=$(jq -r .terraform_action config.json)" >> $GITHUB_ENV
           echo "JENKINS_JOB=$(jq -r .jenkins_job config.json)" >> $GITHUB_ENV
-          echo "JENKINS_HOST=$(jq -r .jenkins_url config.json)" >> $GITHUB_ENV
+          echo "JENKINS_URL=$(jq -r .jenkins_url config.json)" >> $GITHUB_ENV
 
       - name: Trigger Jenkins Job
         run: |
