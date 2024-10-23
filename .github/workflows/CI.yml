@@ -12,5 +12,5 @@ jobs:
     steps:
       - name: Trigger Jenkins Job
         run: |
-          curl -X POST "${{ secrets.JENKINS_IP }}/job/${{ secrets.JENKINS_JOB }}/build" \
+          curl -X POST "${{ secrets.JENKINS_IP }}/job/${{ secrets.JENKINS_JOB }}/buildWithParameters?Environment=dev&Terraform_Action=plan" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
