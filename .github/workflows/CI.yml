@@ -1,20 +1,11 @@
-name: CI
-
-on:
-  push:
-    branches:
-      - main
+on: push
 
 jobs:
   launch_jenkins_job:
-    name: trigger jenkins job
+    name: Trigger Jenkins Job
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Trigger Jenkins Job
-        uses: sbitio/trigger-jenkins-job@master
-        with:
-          JENKINS_USER: ${{ secrets.JENKINS_USER }}
-          JENKINS_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
-          JENKINS_HOST: ${{ secrets.JENKINS_IP }}
-          JENKINS_JOB: ${{ secrets.JENKINS_JOB }}
+      - name: Trigger Jenkins Job
+        run: |
+          curl -X POST {{ secrets.JENKINS_IP }}/job/${{ secrets.JENKINS_JOB }}/build \
+          --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}
