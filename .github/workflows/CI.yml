@@ -1,20 +1,32 @@
-on: push
+name: CI
 
-env:
-  JENKINS_HOST: https://d6d7-2402-a00-173-e1b-4437-2f40-e67-c4c4.ngrok-free.app ## jenkins base url
-  JENKINS_PARAMS: environment=dev&Terrraform_Action=plan
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   launch_jenkins_job:
-    name: trigger jenkins job
+    name: Trigger Jenkins Job
     runs-on: ubuntu-latest
+
     steps:
-      -
-        name: Trigger Jenkins Job
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Load config
+        id: load_config
+        run: |
+          echo "ENVIRONMENT=$(jq -r .environment config.json)" >> $GITHUB_ENV
+          echo "TERRAFORM_ACTION=$(jq -r .terraform_action config.json)" >> $GITHUB_ENV
+          echo "JENKINS_JOB=$(jq -r .jenkins_job config.json)" >> $GITHUB_ENV
+          echo "JENKINS_HOST=$(jq -r .jenkins_url config.json)" >> $GITHUB_ENV
+
+      - name: Trigger Jenkins Job
         uses: sbitio/trigger-jenkins-job@master
         with:
           JENKINS_USER: ${{ secrets.JENKINS_USER }}
           JENKINS_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
           JENKINS_HOST: ${{ env.JENKINS_HOST }}
-          JENKINS_JOB: ${{ secrets.JENKINS_JOB }}
-          JENKINS_PARAMS: ${{ env.JENKINS_PARAMS }}
+          JENKINS_JOB: ${{ env.JENKINS_JOB }}
+          JENKINS_PARAMS: environment=${{ env.ENVIRONMENT }}&Terraform_Action=${{ env.TERRAFORM_ACTION }}
