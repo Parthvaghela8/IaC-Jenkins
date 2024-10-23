@@ -11,9 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the code from the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Step 2: Load configuration from the config.json file
       - name: Load config
         id: load_config
         run: |
@@ -22,9 +24,10 @@ jobs:
           echo "JENKINS_JOB=$(jq -r .jenkins_job config.json)" >> $GITHUB_ENV
           echo "JENKINS_URL=$(jq -r .jenkins_url config.json)" >> $GITHUB_ENV
 
+      # Step 3: Trigger the Jenkins job with parameters
       - name: Trigger Jenkins Job
         run: |
-          curl -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/build" \
+          curl -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" \
           --data-urlencode "environment=${{ env.ENVIRONMENT }}" \
           --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}"
