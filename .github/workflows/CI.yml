@@ -23,10 +23,8 @@ jobs:
           echo "JENKINS_HOST=$(jq -r .jenkins_url config.json)" >> $GITHUB_ENV
 
       - name: Trigger Jenkins Job
-        uses: sbitio/trigger-jenkins-job@master
-        with:
-          JENKINS_USER: ${{ secrets.JENKINS_USER }}
-          JENKINS_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
-          JENKINS_HOST: ${{ env.JENKINS_HOST }}
-          JENKINS_JOB: ${{ env.JENKINS_JOB }}
-          JENKINS_PARAMS: environment=${{ env.ENVIRONMENT }}&Terraform_Action=${{ env.TERRAFORM_ACTION }}
+        run: |
+          curl -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/build" \
+          --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
+          --data-urlencode "environment=${{ env.ENVIRONMENT }}" \
+          --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}"
