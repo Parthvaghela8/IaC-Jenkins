@@ -7,14 +7,22 @@ properties([
         choice(
             choices: ['plan', 'apply', 'destroy'], 
             name: 'Terraform_Action'
-        )])
+        )
+    ])
 ])
+
 pipeline {
     agent any
     stages {
         stage('Preparing') {
             steps {
-                sh 'echo Preparing'
+                script {
+                    if (isUnix()) {
+                        sh 'echo Preparing'
+                    } else {
+                        bat 'echo Preparing'
+                    }
+                }
             }
         }
         stage('Git Pulling') {
@@ -25,27 +33,51 @@ pipeline {
         stage('Init') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                sh 'terraform init'
+                    script {
+                        if (isUnix()) {
+                            sh 'terraform init'
+                        } else {
+                            bat 'terraform init'
+                        }
+                    }
                 }
             }
         }
         stage('Validate') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                sh 'terraform validate'
+                    script {
+                        if (isUnix()) {
+                            sh 'terraform validate'
+                        } else {
+                            bat 'terraform validate'
+                        }
+                    }
                 }
             }
         }
         stage('Action') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    script {    
+                    script {
                         if (params.Terraform_Action == 'plan') {
-                            sh "terraform plan -var-file=${params.Environment}.tfvars"
-                        }   else if (params.Terraform_Action == 'apply') {
-                            sh "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
-                        }   else if (params.Terraform_Action == 'destroy') {
-                            sh "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+                            if (isUnix()) {
+                                sh "terraform plan -var-file=${params.Environment}.tfvars"
+                            } else {
+                                bat "terraform plan -var-file=${params.Environment}.tfvars"
+                            }
+                        } else if (params.Terraform_Action == 'apply') {
+                            if (isUnix()) {
+                                sh "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
+                            } else {
+                                bat "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
+                            }
+                        } else if (params.Terraform_Action == 'destroy') {
+                            if (isUnix()) {
+                                sh "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+                            } else {
+                                bat "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+                            }
                         } else {
                             error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
                         }
