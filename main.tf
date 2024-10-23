@@ -23,7 +23,7 @@ terraform {
   backend "s3" {
     bucket         = "terraform-state-bucket-parth"
     key            = "ProjectA/terraform/state"  # Key for ProjectA state file
-    region         = "us-west-2"
+    region         = "us-east-1"
     dynamodb_table = "terraform-lock"
     encrypt        = true
   }
