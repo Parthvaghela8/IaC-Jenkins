@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trigger_jenkins:
+    runs-on: ubuntu-latest
+   
+    steps:
+      - name: Trigger Jenkins Job
+        run: |
+          curl -X POST ${{ secrets.JENKINS_IP }}/job/${{ env.JOB }}/build \
+          --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }} || exit 1
