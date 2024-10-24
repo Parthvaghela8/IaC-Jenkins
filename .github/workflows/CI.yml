@@ -34,10 +34,19 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      # Step 6: Check Jenkins Reachability
+      # Step 6: Load configuration from a config file
+      - name: Load config
+        id: load_config
+        run: |
+          echo "ENVIRONMENT=$(jq -r .environment config.json)" >> $GITHUB_ENV
+          echo "TERRAFORM_ACTION=$(jq -r .terraform_action config.json)" >> $GITHUB_ENV
+          echo "JENKINS_JOB=$(jq -r .jenkins_job config.json)" >> $GITHUB_ENV
+          echo "JENKINS_URL=$(jq -r .jenkins_url config.json)" >> $GITHUB_ENV
+
+      # Step 7: Check Jenkins Reachability
       - name: Check Jenkins Reachability
         run: |
-          response=$(curl -I -s "${{ env.NGROK_URL }}/job/${{ env.JENKINS_JOB }}/api/json")
+          response=$(curl -I -s "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/api/json")
           
           if [[ "$response" != *"200 OK"* ]]; then
             echo "Jenkins is not reachable via ngrok."
@@ -46,7 +55,7 @@ jobs:
             echo "Jenkins is reachable via ngrok."
           fi
 
-      # Step 7: Trigger the Jenkins job with parameters
+      # Step 8: Trigger the Jenkins job with parameters
       - name: Trigger Jenkins Job
         run: |
           response=$(curl -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
