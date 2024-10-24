@@ -16,7 +16,10 @@ jobs:
         uses: actions/checkout@v2
 
       # Step 2: Set up Terraform
+      - name: Setup Terraform
       - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.1.7"
 
       # Step 3: Initialize Terraform
       - name: Terraform Init
