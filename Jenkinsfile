@@ -87,36 +87,22 @@ pipeline {
         }
     }
 
-    post 
-    {
-        success {
-            emailext(
-                subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Success",
-                body: "Good job! The build was successful. Check it out at ${env.BUILD_URL}",
-                recipientProviders: [
-                    [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
-                ]
-            )
-        }
-    failure
-    {
-            emailext(
-                subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Failed",
-                body: "The build failed due to your recent change. Check it out at ${env.BUILD_URL}",
-                recipientProviders: [
-                    [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
-                ]
-            )
-        }
-    unstable 
-    {
-            emailext(
-                subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Unstable",
-                body: "The build is unstable. Check it out at ${env.BUILD_URL}",
-                recipientProviders: [
-                    [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
-                ]
-            )
-        }
+    post {
+    success {
+        mail to: 'parthvaghela888@gmail.com',
+             subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Success",
+             body: "Good job! The build was successful. Check it out at ${env.BUILD_URL}"
     }
+    failure {
+        mail to: 'parthvaghela888@gmail.com',
+             subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Failed",
+             body: "The build failed due to your recent change. Check it out at ${env.BUILD_URL}"
+    }
+    unstable {
+        mail to: 'parthvaghela888@gmail.com',
+             subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Unstable",
+             body: "The build is unstable. Check it out at ${env.BUILD_URL}"
+    }
+}
+
 }
