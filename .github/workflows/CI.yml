@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  launch_jenkins_job:
-    name: Trigger Jenkins Job
+  validate_and_trigger:
+    name: Validate Terraform and Trigger Jenkins Job
     runs-on: ubuntu-latest
 
     steps:
@@ -25,23 +25,36 @@ jobs:
       - name: Terraform Init (Backend Disabled)
         run: terraform init -backend=false
 
-      # Step 4: Validate Terraform Configuration
+      # Step 4: Format Terraform Configuration
+      - name: Terraform Format
+        run: |
+          terraform fmt -check
+          
+      # Step 5: Validate Terraform Configuration
       - name: Terraform Validate
         run: terraform validate
 
-      # Step 5: Load configuration from the config.json file
-      - name: Load config
-        id: load_config
+      # Step 6: Check Jenkins Reachability
+      - name: Check Jenkins Reachability
         run: |
-          echo "ENVIRONMENT=$(jq -r .environment config.json)" >> $GITHUB_ENV
-          echo "TERRAFORM_ACTION=$(jq -r .terraform_action config.json)" >> $GITHUB_ENV
-          echo "JENKINS_JOB=$(jq -r .jenkins_job config.json)" >> $GITHUB_ENV
-          echo "JENKINS_URL=$(jq -r .jenkins_url config.json)" >> $GITHUB_ENV
+          response=$(curl -I -s "${{ env.NGROK_URL }}/job/${{ env.JENKINS_JOB }}/api/json")
+          
+          if [[ "$response" != *"200 OK"* ]]; then
+            echo "Jenkins is not reachable via ngrok."
+            exit 1  # Exit with an error to fail the workflow
+          else
+            echo "Jenkins is reachable via ngrok."
+          fi
 
-      # Step 6: Trigger the Jenkins job with parameters
+      # Step 7: Trigger the Jenkins job with parameters
       - name: Trigger Jenkins Job
         run: |
-          curl -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
+          response=$(curl -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" \
           --data-urlencode "environment=${{ env.ENVIRONMENT }}" \
-          --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}"
+          --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}")
+          
+          if [[ "$response" != *"201 Created"* ]]; then
+            echo "Failed to trigger Jenkins job"
+            exit 1  # Exit with an error to fail the workflow
+          fi
