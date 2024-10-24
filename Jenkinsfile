@@ -94,9 +94,12 @@ pipeline {
              body: "Good job! The build was successful. Check it out at ${env.BUILD_URL}"
     }
     failure {
-        mail to: 'parthvaghela888@gmail.com',
-             subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Failed",
-             body: "The build failed due to your recent change. Check it out at ${env.BUILD_URL}"
+       emailext (
+    subject: "Test Email",
+    body: "This is a test email.",
+    to: "parthvaghela888@gmail.com"
+)
+
     }
     unstable {
         mail to: 'parthvaghela888@gmail.com',
