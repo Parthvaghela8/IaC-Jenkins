@@ -90,22 +90,21 @@ pipeline {
     post {
         success {
             // Send email on successful build
-            mail to: env.COMMITTER_EMAIL // Fallback if email not found
+            mail to: env.COMMITTER_EMAIL, // Ensure a comma is present here
                  subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Success",
                  body: "Good job! The build was successful. Check it out at ${env.BUILD_URL}"
         }
         failure {
             // Send email on failure
-            mail to: env.COMMITTER_EMAIL // Fallback if email not found
+            mail to: env.COMMITTER_EMAIL, // Ensure a comma is present here
                  subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Failed",
                  body: "The build failed due to your recent change. Check it out at ${env.BUILD_URL}"
         }
         unstable {
             // Send email on unstable builds
-            mail to: env.COMMITTER_EMAIL // Fallback if email not found
+            mail to: env.COMMITTER_EMAIL, // Ensure a comma is present here
                  subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Unstable",
                  body: "The build is unstable. Check it out at ${env.BUILD_URL}"
         }
     }
-
 }
