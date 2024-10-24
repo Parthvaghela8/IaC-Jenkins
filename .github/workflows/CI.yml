@@ -66,10 +66,16 @@ jobs:
           echo "Response headers and body:"
           echo "$response"
 
-          # Check for status code "201 Created" in the response
-          if [[ "$response" == *"201 Created"* ]]; then
-            echo "Jenkins job triggered successfully."
+          # Extract the HTTP status code from the response
+          http_status=$(echo "$response" | grep HTTP | awk '{print $2}')
+
+          # Print the status code for debugging
+          echo "HTTP status code: $http_status"
+
+          # Check if the status code is 201 or any other success code
+          if [[ "$http_status" == "201" || "$http_status" == "200" || "$http_status" == "302" ]]; then
+              echo "Jenkins job triggered successfully."
           else
-            echo "Failed to trigger Jenkins job. Response received:"
-            exit 1  # Exit with an error to fail the workflow
+              echo "Failed to trigger Jenkins job. Response received:"
+              exit 1  # Exit with an error to fail the workflow
           fi
