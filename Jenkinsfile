@@ -27,13 +27,9 @@ pipeline {
         }
         stage('Send Test Email') {
             steps {
-                script {
-                    emailext (
-                        subject: "Test Email",
-                        body: "This is a test email.",
-                        to: "parthvaghela888@gmail.com"
-                    )
-                }
+                mail to: 'parthvaghela888@gmail.com',
+                     subject: "Test Email",
+                     body: "This is a test email using the basic mail plugin."
             }
         }
         stage('Git Pulling') {
