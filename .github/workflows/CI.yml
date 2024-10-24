@@ -46,7 +46,7 @@ jobs:
       # Step 7: Check Jenkins Reachability
       - name: Check Jenkins Reachability
         run: |
-          response=$(curl -I -s "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/api/json")
+          response=$(curl -I -s -u "${{ secrets.JENKINS_USERNAME }}:${{ secrets.JENKINS_API_TOKEN }}" "${{ env.JENKINS_URL }}")
           
           if [[ "$response" != *"200 OK"* ]]; then
             echo "Jenkins is not reachable via ngrok."
