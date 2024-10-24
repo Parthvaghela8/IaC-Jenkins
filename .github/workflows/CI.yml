@@ -63,7 +63,13 @@ jobs:
           --data-urlencode "environment=${{ env.ENVIRONMENT }}" \
           --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}")
           
-          if [[ "$response" != *"201 Created"* ]]; then
-            echo "Failed to trigger Jenkins job"
+          echo "Response headers and body:"
+          echo "$response"
+
+          # Check for status code "201 Created" in the response
+          if [[ "$response" == *"201 Created"* ]]; then
+            echo "Jenkins job triggered successfully."
+          else
+            echo "Failed to trigger Jenkins job. Response received:"
             exit 1  # Exit with an error to fail the workflow
           fi
