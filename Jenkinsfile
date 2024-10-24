@@ -25,6 +25,17 @@ pipeline {
                 }
             }
         }
+        stage('Send Test Email') {
+            steps {
+                script {
+                    emailext (
+                        subject: "Test Email",
+                        body: "This is a test email.",
+                        to: "parthvaghela888@gmail.com"
+                    )
+                }
+            }
+        }
         stage('Git Pulling') {
             steps {
                 git branch: 'main', url: 'https://github.com/Parthvaghela8/IaC-Jenkins.git'
