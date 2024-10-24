@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"  # Adjust to your preferred region
+  region = "us-east-1" # Adjust to your preferred region
 }
 
 # Declare variables
@@ -22,7 +22,7 @@ variable "bucket_versioning_enabled" {
 terraform {
   backend "s3" {
     bucket         = "terraform-state-bucket-parth"
-    key            = "ProjectA/terraform/state"  # Key for ProjectA state file
+    key            = "ProjectA/terraform/state" # Key for ProjectA state file
     region         = "us-east-1"
     dynamodb_table = "terraform-lock"
     encrypt        = true
