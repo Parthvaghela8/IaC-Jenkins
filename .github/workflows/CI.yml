@@ -48,8 +48,8 @@ jobs:
         run: |
           response=$(curl -v -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/api/json")
           
-          if [[ "$response" != *"200 OK"* ]]; then
-            echo "Jenkins is not reachable via ngrok."
+          if [ "$response" -ne 200 ]; then
+            echo "Jenkins is not reachable via ngrok. HTTP Status: $response"
             exit 1  # Exit with an error to fail the workflow
           else
             echo "Jenkins is reachable via ngrok."
