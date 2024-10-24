@@ -87,34 +87,31 @@ pipeline {
         }
     }
 
-    post 
-    {
+    post {
         success {
             emailext(
                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Success",
                 body: "Good job! The build was successful. Check it out at ${env.BUILD_URL}",
                 recipientProviders: [
-                    [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
+                    [$class: 'CulpritRecipientProvider'] // Sends email to the user who caused the job to run
                 ]
             )
         }
-    failure
-    {
+        failure {
             emailext(
                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Failed",
                 body: "The build failed due to your recent change. Check it out at ${env.BUILD_URL}",
                 recipientProviders: [
-                    [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
+                    [$class: 'CulpritRecipientProvider'] // Sends email to the user who caused the failure
                 ]
             )
         }
-    unstable 
-    {
+        unstable {
             emailext(
                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Unstable",
                 body: "The build is unstable. Check it out at ${env.BUILD_URL}",
                 recipientProviders: [
-                    [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
+                    [$class: 'CulpritRecipientProvider'] // Sends email to the user who caused the instability
                 ]
             )
         }
