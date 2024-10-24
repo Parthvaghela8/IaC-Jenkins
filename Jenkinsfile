@@ -25,13 +25,6 @@ pipeline {
                 }
             }
         }
-        stage('Send Test Email') {
-            steps {
-                mail to: 'parthvaghela888@gmail.com',
-                     subject: "Test Email",
-                     body: "This is a test email using the basic mail plugin."
-            }
-        }
         stage('Git Pulling') {
             steps {
                 git branch: 'main', url: 'https://github.com/Parthvaghela8/IaC-Jenkins.git'
@@ -95,33 +88,24 @@ pipeline {
     }
 
     post {
-    success {
-        emailext(
-            subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Success",
-            body: "Good job! The build was successful. Check it out at ${env.BUILD_URL}",
-            recipientProviders: [
-                [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
-            ]
-        )
+        success {
+            // Send email on successful build
+            mail to: env.COMMITTER_EMAIL // Fallback if email not found
+                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Success",
+                 body: "Good job! The build was successful. Check it out at ${env.BUILD_URL}"
+        }
+        failure {
+            // Send email on failure
+            mail to: env.COMMITTER_EMAIL // Fallback if email not found
+                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Failed",
+                 body: "The build failed due to your recent change. Check it out at ${env.BUILD_URL}"
+        }
+        unstable {
+            // Send email on unstable builds
+            mail to: env.COMMITTER_EMAIL // Fallback if email not found
+                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Unstable",
+                 body: "The build is unstable. Check it out at ${env.BUILD_URL}"
+        }
     }
-    failure {
-        emailext(
-            subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Failed",
-            body: "The build failed due to your recent change. Check it out at ${env.BUILD_URL}",
-            recipientProviders: [
-                [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
-            ]
-        )
-    }
-    unstable {
-        emailext(
-            subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Unstable",
-            body: "The build is unstable. Check it out at ${env.BUILD_URL}",
-            recipientProviders: [
-                [$class: 'RequesterRecipientProvider'] // Sends email to the user who triggered the job
-            ]
-        )
-    }
-}
 
 }
