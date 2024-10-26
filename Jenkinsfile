@@ -12,9 +12,10 @@ properties([
 ])
 
 pipeline {
-    agent { label 'ubuntu' }  
+    agent { label 'ubuntu' }
+
     stages {
-        stage('Preparing') {
+        stage('Preparation') {
             steps {
                 script {
                     if (isUnix()) {
@@ -25,9 +26,9 @@ pipeline {
                 }
             }
         }
-        stage('Git Pulling') {
+        stage('SCM Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Parthvaghela8/IaC-Jenkins.git'
+                checkout scm
             }
         }
         stage('Get Committer Email') {
@@ -96,23 +97,38 @@ pipeline {
     }
 
     post {
-        success {
-            // Send email on successful build
-            mail to: env.COMMITTER_EMAIL ?: 'default@example.com', // Fallback if email not found
-                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Success",
-                 body: "Good job! The build was successful. Check it out at ${env.BUILD_URL}"
-        }
-        failure {
-            // Send email on failure
-            mail to: env.COMMITTER_EMAIL ?: 'default@example.com', // Fallback if email not found
-                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Failed",
-                 body: "The build failed due to your recent change. Check it out at ${env.BUILD_URL}"
-        }
-        unstable {
-            // Send email on unstable builds
-            mail to: env.COMMITTER_EMAIL ?: 'default@example.com', // Fallback if email not found
-                 subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) Unstable",
-                 body: "The build is unstable. Check it out at ${env.BUILD_URL}"
+        always {
+            script {
+                sendEmail(env.COMMITTER_EMAIL ?: 'default@example.com', env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+            }
         }
     }
 }
+
+// Function to send email
+def sendEmail(String recipient, String jobName, String buildNumber, String buildResult) {
+    def subject = "Job '${jobName}' (${buildNumber}) ${buildResult ?: 'Unstable'}"
+    def body = generateEmailBody(jobName, buildNumber, buildResult)
+
+    mail to: recipient, subject: subject, body: body
+}
+
+// Function to generate email body based on a template
+def generateEmailBody(String jobName, String buildNumber, String buildResult) {
+    def template = """
+    Hello,
+
+    This is a notification regarding your Jenkins job:
+
+    Job Name: ${jobName}
+    Build Number: ${buildNumber}
+    Build Result: ${buildResult ?: 'Unstable'}
+
+    You can view the job details at: ${env.BUILD_URL}
+
+    Regards,
+    Jenkins
+    """
+    return template.stripIndent()
+}
+
