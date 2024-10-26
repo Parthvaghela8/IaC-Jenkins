@@ -33,7 +33,7 @@ pipeline {
         stage('Get Committer Email') {
             steps {
                 script {
-                    env.COMMITTER_EMAIL = bat(script: "git log -1 --pretty=format:\"%%ae\"", returnStdout: true).trim()
+                    env.COMMITTER_EMAIL = sh(script: "git log -1 --pretty=format:'%ae'", returnStdout: true).trim()
                     echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
                 }
             }
