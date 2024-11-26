@@ -15,6 +15,12 @@ pipeline {
     agent { label 'ec2' }
 
     stages {
+        stage('Track Node') {
+            steps {
+                script {
+                    echo "Running on node: ${env.NODE_NAME}"
+            }
+        }
         stage('Preparation') {
             steps {
                 script {
