@@ -13,9 +13,6 @@ properties([
 
 pipeline {
     agent { label 'ec2' }
-    tools {
-        git 'Default'  // Use the name you configured in Global Tool Configuration
-    }
 
     stages {
         stage('Track Node') {
@@ -23,6 +20,11 @@ pipeline {
                 script {
                     echo "Running on node: ${env.NODE_NAME}"
                }
+            }
+        }
+        stage('SCM Checkout') {
+            steps {
+                checkout scm
             }
         }
         stage('Preparation') {
@@ -34,11 +36,6 @@ pipeline {
                         bat 'echo Preparing'
                     }
                 }
-            }
-        }
-        stage('SCM Checkout') {
-            steps {
-                checkout scm
             }
         }
         stage('Get Committer Email') {
