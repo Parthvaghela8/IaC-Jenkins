@@ -19,6 +19,7 @@ pipeline {
             steps {
                 script {
                     echo "Running on node: ${env.NODE_NAME}"
+               }
             }
         }
         stage('Preparation') {
