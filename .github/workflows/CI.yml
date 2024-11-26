@@ -46,7 +46,8 @@ jobs:
       # Step 7: Check Jenkins Reachability
       - name: Check Jenkins Reachability
         run: |
-          response=$(curl -v -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/api/json")
+          # Capture only the HTTP status code
+          response=$(curl -w "%{http_code}" -s -o /dev/null -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/api/json")
           
           if [ "$response" -ne 200 ]; then
             echo "Jenkins is not reachable via ngrok. HTTP Status: $response"
@@ -58,7 +59,8 @@ jobs:
       # Step 8: Trigger the Jenkins job with parameters
       - name: Trigger Jenkins Job
         run: |
-          response=$(curl -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
+          # Capture only the HTTP status code
+          response=$(curl -w "%{http_code}" -s -o /dev/null -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" \
           --data-urlencode "environment=${{ env.ENVIRONMENT }}" \
           --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}")
@@ -67,5 +69,5 @@ jobs:
             echo "Jenkins is not reachable via ngrok. HTTP Status: $response"
             exit 1  # Exit with an error to fail the workflow
           else
-            echo "Jenkins is reachable via ngrok."
+            echo "Jenkins job triggered successfully."
           fi
