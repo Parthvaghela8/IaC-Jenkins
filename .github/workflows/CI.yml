@@ -47,7 +47,7 @@ jobs:
       - name: Check Jenkins Reachability
         run: |
           # Send a curl request to Jenkins and capture both the response body and status code
-          response_code=$(curl -w "%{http_code}" -s -o /dev/null -u "***:***" "https://0401-2402-a00-173-e1b-358c-ad6c-6393-5588.ngrok-free.app/job/IaC/api/json")
+          response_code=$(curl -w "%{http_code}" -s -o /dev/null -u "***:***" "$JENKINS_URL/job/$JENKINS_JOB/api/json")
 
           # Log the HTTP status code for visibility
           echo "Jenkins HTTP Status Code: $response_code"
