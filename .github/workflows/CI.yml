@@ -46,11 +46,22 @@ jobs:
       # Step 7: Check Jenkins Reachability
       - name: Check Jenkins Reachability
         run: |
-          # Capture only the HTTP status code
-          response=$(curl -w "%{http_code}" -s -o /dev/null -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/api/json")
-          
-          if [ "$response" -ne 200 ]; then
-            echo "Jenkins is not reachable via ngrok. HTTP Status: $response"
+          # Send request and capture the response body and status code
+          response=$(curl -w "%{http_code}" -s -o response_body.txt -u "***:***" "https://0401-2402-a00-173-e1b-358c-ad6c-6393-5588.ngrok-free.app/job/IaC/api/json")
+
+          # Extract the status code (last 3 characters of the response)
+          status_code="${response: -3}"
+
+          # Display the full response body in the logs
+          echo "Response Body:"
+          cat response_body.txt
+
+          # Display the HTTP status code in the logs
+          echo "HTTP Status Code: $status_code"
+
+          # Check if the status code is 200 or not
+          if [ "$status_code" -ne 200 ]; then
+            echo "Jenkins is not reachable via ngrok. HTTP Status: $status_code"
             exit 1  # Exit with an error to fail the workflow
           else
             echo "Jenkins is reachable via ngrok."
