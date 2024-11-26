@@ -46,43 +46,36 @@ jobs:
       # Step 7: Check Jenkins Reachability
       - name: Check Jenkins Reachability
         run: |
-          # Run curl and capture the response and status code
-          response=$(curl -w "%{http_code}" -s -u "***:***" "https://0401-2402-a00-173-e1b-358c-ad6c-6393-5588.ngrok-free.app/job/IaC/api/json")
+          # Send a curl request to Jenkins and capture both the response body and status code
+          response_code=$(curl -w "%{http_code}" -s -o /dev/null -u "***:***" "https://0401-2402-a00-173-e1b-358c-ad6c-6393-5588.ngrok-free.app/job/IaC/api/json")
 
-          # Extract the status code (last 3 characters)
-          status_code="${response: -3}"
+          # Log the HTTP status code for visibility
+          echo "Jenkins HTTP Status Code: $response_code"
 
-          # Get the response body (everything except the last 3 characters)
-          response_body="${response%${status_code}}"
-
-          # Print the full response body in the logs
-          echo "Response Body:"
-          echo "$response_body"
-
-          # Print the HTTP status code
-          echo "HTTP Status Code: $status_code"
-
-          # Check if the status code is 200 or not
-          if [ "$status_code" -ne 200 ]; then
-            echo "Jenkins is not reachable via ngrok. HTTP Status: $status_code"
-            exit 1  # Exit with an error to fail the workflow
+          # If the status code is not 200, then log the error and exit with failure
+          if [ "$response_code" -ne 200 ]; then
+            echo "Error: Jenkins is not reachable. HTTP Status: $response_code"
+            exit 1  # Fail the workflow
           else
-            echo "Jenkins is reachable via ngrok."
+            echo "Success: Jenkins is reachable. HTTP Status: $response_code"
           fi
-
 
       # Step 8: Trigger the Jenkins job with parameters
       - name: Trigger Jenkins Job
         run: |
-          # Capture only the HTTP status code
-          response=$(curl -w "%{http_code}" -s -o /dev/null -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
+          # Send a POST request to trigger the Jenkins job and capture the HTTP status code
+          response_code=$(curl -w "%{http_code}" -s -o /dev/null -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" \
           --data-urlencode "environment=${{ env.ENVIRONMENT }}" \
           --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}")
+
+          # Log the HTTP status code for visibility
+          echo "Jenkins HTTP Status Code: $response_code"
           
-          if [ "$response" -ne 201 ]; then
-            echo "Jenkins is not reachable via ngrok. HTTP Status: $response"
-            exit 1  # Exit with an error to fail the workflow
+          # Check if the response code is not 201 (created) to ensure the job was triggered successfully
+          if [ "$response_code" -ne 201 ]; then
+            echo "Error: Jenkins job was not triggered. HTTP Status: $response_code"
+            exit 1  # Fail the workflow
           else
-            echo "Jenkins job triggered successfully."
+            echo "Success: Jenkins job triggered successfully. HTTP Status: $response_code"
           fi
