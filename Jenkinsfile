@@ -13,6 +13,9 @@ properties([
 
 pipeline {
     agent { label 'ec2' }
+    tools {
+        git 'Git_Default'  // Use the name you configured in Global Tool Configuration
+    }
 
     stages {
         stage('Track Node') {
