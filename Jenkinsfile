@@ -12,7 +12,7 @@ properties([
 ])
 
 pipeline {
-    agent { label 'ubuntu' }
+    agent { label 'ec2' }
 
     stages {
         stage('Preparation') {
