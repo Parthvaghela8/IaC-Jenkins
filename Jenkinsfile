@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ec2' }
+    agent { label 'ec2' }  // Ensure this pipeline runs only on EC2 agent
 
     // Define parameters for environment and Terraform action type
     properties([
@@ -52,71 +52,71 @@ pipeline {
             }
         }
 
-//         // Terraform action stage (init, plan, apply, destroy)
-//         stage('Terraform Action') {
-//             steps {
-//                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-//                     script {
-//                         def terraformCmd = ""
+        // Terraform action stage (init, plan, apply, destroy)
+        stage('Terraform Action') {
+            steps {
+                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                    script {
+                        def terraformCmd = ""
 
-//                         // Switch based on the Terraform action selected in the parameters
-//                         switch (params.Terraform_Action) {
-//                             case 'plan':
-//                                 terraformCmd = "terraform plan -var-file=${params.Environment}.tfvars"
-//                                 break
-//                             case 'apply':
-//                                 terraformCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
-//                                 break
-//                             case 'destroy':
-//                                 terraformCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
-//                                 break
-//                             default:
-//                                 error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
-//                         }
+                        // Switch based on the Terraform action selected in the parameters
+                        switch (params.Terraform_Action) {
+                            case 'plan':
+                                terraformCmd = "terraform plan -var-file=${params.Environment}.tfvars"
+                                break
+                            case 'apply':
+                                terraformCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
+                                break
+                            case 'destroy':
+                                terraformCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+                                break
+                            default:
+                                error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+                        }
 
-//                         // Run the Terraform command
-//                         sh terraformCmd
-//                     }
-//                 }
-//             }
-//         }
-//     }
+                        // Run the Terraform command
+                        sh terraformCmd
+                    }
+                }
+            }
+        }
+    }
 
-//     post {
-//         always {
-//             script {
-//                 // Ensure email is sent after the build completes
-//                 sendEmail(env.USER_EMAIL, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
-//             }
-//         }
-//     }
-// }
+    post {
+        always {
+            script {
+                // Ensure email is sent after the build completes
+                sendEmail(env.USER_EMAIL, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+            }
+        }
+    }
+}
 
-// // Function to send email using Jenkins' built-in mail functionality
-// def sendEmail(String recipient, String jobName, String buildNumber, String buildResult) {
-//     def subject = "Job '${jobName}' (${buildNumber}) ${buildResult ?: 'Unstable'}"
-//     def body = generateEmailBody(jobName, buildNumber, buildResult)
+// Function to send email using Jenkins' built-in mail functionality
+def sendEmail(String recipient, String jobName, String buildNumber, String buildResult) {
+    def subject = "Job '${jobName}' (${buildNumber}) ${buildResult ?: 'Unstable'}"
+    def body = generateEmailBody(jobName, buildNumber, buildResult)
 
-//     // Use Jenkins default mail functionality
-//     mail to: recipient,
-//          subject: subject,
-//          body: body
-// }
+    // Use Jenkins default mail functionality
+    mail to: recipient,
+         subject: subject,
+         body: body
+}
 
-// // Function to generate the email body based on the build result
-// def generateEmailBody(String jobName, String buildNumber, String buildResult) {
-//     return """
-//     Hello,
+// Function to generate the email body based on the build result
+def generateEmailBody(String jobName, String buildNumber, String buildResult) {
+    return """
+    Hello,
 
-//     This is a notification regarding your Jenkins job:
+    This is a notification regarding your Jenkins job:
 
-//     Job Name: ${jobName}
-//     Build Number: ${buildNumber}
-//     Build Result: ${buildResult ?: 'Unstable'}
+    Job Name: ${jobName}
+    Build Number: ${buildNumber}
+    Build Result: ${buildResult ?: 'Unstable'}
 
-//     You can view the job details at: ${env.BUILD_URL}
+    You can view the job details at: ${env.BUILD_URL}
 
-//     Regards,
-//     Jenkins
-//     """.stripIndent()
-// }
+    Regards,
+    Jenkins
+    """.stripIndent()
+}
