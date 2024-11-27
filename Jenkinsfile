@@ -15,15 +15,6 @@ pipeline {
     agent { label 'ec2' }  // The entire pipeline will run on the EC2 agent
 
     stages {
-        stage('SCM Checkout') {
-            steps {
-                script {
-                    // Use the correct path to Git on the EC2 agent
-                    sh '/usr/bin/git clone https://github.com/Parthvaghela8/IaC-Jenkins.git'
-                }
-                // checkout scm  // Git will be used here from the EC2 agent
-            }
-        }
 
         stage('Track Node') {
             steps {
