@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ec2' }  // Ensure this pipeline runs only on EC2 agent
+    agent { label 'ec2' }
 
     // Define parameters for environment and Terraform action type
     properties([
@@ -15,12 +15,18 @@ pipeline {
         ])
     ])
 
+    tools {
+        // Define the tool path for Git to avoid Jenkins using the master node's Git
+        git 'git' // You can set the Git installation if needed or leave this empty if Git is in PATH
+    }
+
     stages {
         // Stage to track the node the job is running on
         stage('Track Node') {
             steps {
                 echo "Running on node: ${env.NODE_NAME}"
-                sh '/usr/bin/git --version'  // Ensure Git version is installed
+                sh 'which git'  // Verify the git path is correct on EC2
+                sh 'git --version'  // Ensure Git version is installed
             }
         }
 
