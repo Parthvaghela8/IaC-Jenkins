@@ -12,7 +12,7 @@ properties([
 ])
 
 pipeline {
-    agent { label 'ec2' }
+    agent any
 
     stages {
         stage('Track Node') {
