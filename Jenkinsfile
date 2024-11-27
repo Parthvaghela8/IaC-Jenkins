@@ -35,55 +35,56 @@ pipeline {
                         // Use commit email (first priority)
                         userEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL
                     }
+                    env.GIT_COMMITTER_EMAIL;
+                    env.GIT_AUTHOR_EMAIL;
                     echo userEmail;
                 }
             }
         }
-        stage('Init') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    sh 'terraform init'
-                }
-            }
-        }
-        stage('Validate') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    sh 'terraform validate'
-                }
-            }
-        }
-        stage('Action') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    script {
-                        def actionCmd = ""
-                        switch (params.Terraform_Action) {
-                            case 'plan':
-                                actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
-                                break
-                            case 'apply':
-                                actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
-                                break
-                            case 'destroy':
-                                actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
-                                break
-                            default:
-                                error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
-                        }
-                        sh actionCmd
-                    }
-                }
-            }
-        }
-    }
+    //     stage('Init') {
+    //         steps {
+    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+    //                 sh 'terraform init'
+    //             }
+    //         }
+    //     }
+    //     stage('Validate') {
+    //         steps {
+    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+    //                 sh 'terraform validate'
+    //             }
+    //         }
+    //     }
+    //     stage('Action') {
+    //         steps {
+    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+    //                 script {
+    //                     def actionCmd = ""
+    //                     switch (params.Terraform_Action) {
+    //                         case 'plan':
+    //                             actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
+    //                             break
+    //                         case 'apply':
+    //                             actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
+    //                             break
+    //                         case 'destroy':
+    //                             actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+    //                             break
+    //                         default:
+    //                             error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+    //                     }
+    //                     sh actionCmd
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     post {
         always {
             script {
                 // Ensure that the email recipient is correctly passed
-                def recipientEmail = env.PUSHER_EMAIL ?: 'default@example.com' // fallback to default if not set
-                sendEmail(recipientEmail, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+                sendEmail(userEmail, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
             }
         }
     }
