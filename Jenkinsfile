@@ -12,19 +12,18 @@ properties([
 ])
 
 pipeline {
-    agent { label 'ec2' }
-
     stages {
+        agent { label 'ec2' }
+        stage('SCM Checkout') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Track Node') {
             steps {
                 script {
                     echo "Running on node: ${env.NODE_NAME}"
                 }
-            }
-        }
-        stage('SCM Checkout') {
-            steps {
-                checkout scm
             }
         }
         stage('Get Committer Email') {
