@@ -2,17 +2,15 @@ pipeline {
     agent { label 'ec2' }
 
     // Define parameters for environment and Terraform action type
-    options {
-        parameters {
-            string(
-                defaultValue: 'dev',
-                name: 'Environment'
-            )
-            choice(
-                choices: ['plan', 'apply', 'destroy'],
-                name: 'Terraform_Action'
-            )
-        }
+    parameters {
+        string(
+            defaultValue: 'dev',
+            name: 'Environment'
+        )
+        choice(
+            choices: ['plan', 'apply', 'destroy'],
+            name: 'Terraform_Action'
+        )
     }
 
     stages {
