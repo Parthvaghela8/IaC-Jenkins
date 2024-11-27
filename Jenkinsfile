@@ -16,7 +16,7 @@ pipeline {
 
     environment {
         // Extract GIT_AUTHOR_EMAIL if set by Jenkins
-        PUSHER_EMAIL = env.GIT_AUTHOR_EMAIL ?: 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
+        env.PUSHER_EMAIL = env.GIT_AUTHOR_EMAIL ?: 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
     }
 
     stages {
