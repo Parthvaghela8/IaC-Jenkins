@@ -1,85 +1,122 @@
-properties([
-    parameters([
-        string(
-            defaultValue: 'dev',
-            name: 'Environment'
-        ),
-        choice(
-            choices: ['plan', 'apply', 'destroy'],
-            name: 'Terraform_Action'
-        )
-    ])
-])
-
 pipeline {
     agent { label 'ec2' }
 
+    // Define parameters for environment and Terraform action type
+    properties([
+        parameters([
+            string(
+                defaultValue: 'dev',
+                name: 'Environment'
+            ),
+            choice(
+                choices: ['plan', 'apply', 'destroy'],
+                name: 'Terraform_Action'
+            )
+        ])
+    ])
+
     stages {
+        // Stage to track the node the job is running on
         stage('Track Node') {
             steps {
                 echo "Running on node: ${env.NODE_NAME}"
-                sh '/usr/bin/git --version'
+                sh '/usr/bin/git --version'  // Ensure Git version is installed
             }
         }
+
+        // Stage to verify the Git version
         stage('Git Version') {
             steps {
-                sh 'git --version'
+                sh 'git --version'  // Check that Git is working correctly
             }
         }
+
+        // Stage for SCM Checkout
         stage('SCM Checkout') {
             steps {
-                checkout scm
+                checkout scm  // This will check out the code from the repository
             }
         }
+
+        // Stage to get the email of the user who triggered the build
         stage('Get Triggered User Email') {
             steps {
                 script {
-                    // Try to retrieve the commit author's email from the SCM trigger
-                    def committerEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL ?: 'unknown@example.com'
+                    // Get the email of the committer from the environment variables
+                    def committerEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL
                     echo "Committer Email: ${committerEmail}"
-                    // Store email for later use in post action
-                    currentBuild.description = "Triggered by ${committerEmail}"
+
+                    // Use committerEmail in the email notification later
+                    env.USER_EMAIL = committerEmail
                 }
             }
         }
-    }
 
-    post {
-        always {
-            script {
-                // Ensure the email recipient is correctly passed from the SCM trigger stage
-                def userEmail = currentBuild.description?.replace("Triggered by ", "") ?: "default@example.com"
-                sendEmail(userEmail, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
-            }
-        }
-    }
-}
+//         // Terraform action stage (init, plan, apply, destroy)
+//         stage('Terraform Action') {
+//             steps {
+//                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+//                     script {
+//                         def terraformCmd = ""
 
-// Function to send email using default Jenkins email notification
-def sendEmail(String recipient, String jobName, String buildNumber, String buildResult) {
-    def subject = "Job '${jobName}' (${buildNumber}) ${buildResult ?: 'Unstable'}"
-    def body = generateEmailBody(jobName, buildNumber, buildResult)
+//                         // Switch based on the Terraform action selected in the parameters
+//                         switch (params.Terraform_Action) {
+//                             case 'plan':
+//                                 terraformCmd = "terraform plan -var-file=${params.Environment}.tfvars"
+//                                 break
+//                             case 'apply':
+//                                 terraformCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
+//                                 break
+//                             case 'destroy':
+//                                 terraformCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+//                                 break
+//                             default:
+//                                 error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+//                         }
 
-    // Use Jenkins default mail functionality
-    mail to: recipient,
-         subject: subject,
-         body: body
-}
+//                         // Run the Terraform command
+//                         sh terraformCmd
+//                     }
+//                 }
+//             }
+//         }
+//     }
 
-// Function to generate email body based on a template
-def generateEmailBody(String jobName, String buildNumber, String buildResult) {
-    return """
-    Hello,
+//     post {
+//         always {
+//             script {
+//                 // Ensure email is sent after the build completes
+//                 sendEmail(env.USER_EMAIL, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+//             }
+//         }
+//     }
+// }
 
-    This is a notification regarding your Jenkins job:
+// // Function to send email using Jenkins' built-in mail functionality
+// def sendEmail(String recipient, String jobName, String buildNumber, String buildResult) {
+//     def subject = "Job '${jobName}' (${buildNumber}) ${buildResult ?: 'Unstable'}"
+//     def body = generateEmailBody(jobName, buildNumber, buildResult)
 
-    Job Name: ${jobName}
-    Build Number: ${buildNumber}
-    Build Result: ${buildResult ?: 'Unstable'}
+//     // Use Jenkins default mail functionality
+//     mail to: recipient,
+//          subject: subject,
+//          body: body
+// }
 
-    You can view the job details at: ${env.BUILD_URL}
+// // Function to generate the email body based on the build result
+// def generateEmailBody(String jobName, String buildNumber, String buildResult) {
+//     return """
+//     Hello,
 
-    Regards,
-    Jenkins
-    """.stripIndent()
-}
+//     This is a notification regarding your Jenkins job:
+
+//     Job Name: ${jobName}
+//     Build Number: ${buildNumber}
+//     Build Result: ${buildResult ?: 'Unstable'}
+
+//     You can view the job details at: ${env.BUILD_URL}
+
+//     Regards,
+//     Jenkins
+//     """.stripIndent()
+// }
