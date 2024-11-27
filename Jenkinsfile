@@ -5,7 +5,7 @@ properties([
             name: 'Environment'
         ),
         choice(
-            choices: ['plan', 'apply', 'destroy'], 
+            choices: ['plan', 'apply', 'destroy'],
             name: 'Terraform_Action'
         )
     ])
@@ -28,12 +28,15 @@ pipeline {
         stage('Get Triggered User Email') {
             steps {
                 script {
-                    def userEmail = 'default@example.com'
+                    def userEmail = 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
+                    // If it's a GitHub trigger, try fetching the email using the GitHub API
                     if (env.GITHUB_ACTOR) {
-                        // You can query GitHub's API to get the user's email
+                        // Query GitHub API to get the user's email
                         userEmail = sh(script: "curl -s https://api.github.com/users/${env.GITHUB_ACTOR} | jq -r .email", returnStdout: true).trim()
                     }
                     echo "Triggered user email: ${userEmail}"
+                    // Set the environment variable to userEmail
+                    env.PUSHER_EMAIL = userEmail
                 }
             }
         }
@@ -79,7 +82,9 @@ pipeline {
     post {
         always {
             script {
-                sendEmail(env.PUSHER_EMAIL, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+                // Ensure that the email recipient is correctly passed
+                def recipientEmail = env.PUSHER_EMAIL ?: 'default@example.com' // fallback to default if not set
+                sendEmail(recipientEmail, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
             }
         }
     }
@@ -95,7 +100,6 @@ def sendEmail(String recipient, String jobName, String buildNumber, String build
          subject: subject,
          body: body
 }
-
 
 // Function to generate email body based on a template
 def generateEmailBody(String jobName, String buildNumber, String buildResult) {
