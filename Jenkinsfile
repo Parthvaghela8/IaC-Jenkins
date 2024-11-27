@@ -13,8 +13,8 @@ properties([
 
 pipeline {
     stages {
-        agent { label 'ec2' }
         stage('SCM Checkout') {
+            agent { label 'ec2' }
             steps {
                 checkout scm
             }
