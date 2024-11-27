@@ -18,21 +18,21 @@ pipeline {
         stage('Track Node') {
             steps {
                 echo "Running on node: ${env.NODE_NAME}"
-                sh '/usr/bin/git --version'  // Ensure Git version is installed
             }
         }
+
+        //   // Stage for SCM Checkout
+        // stage('SCM Checkout') {
+        //     steps {
+        //         checkout scm  // This will check out the code from the repository
+        //     }
+        // }
+
 
         // Stage to verify the Git version
         stage('Git Version') {
             steps {
                 sh 'git --version'  // Check that Git is working correctly
-            }
-        }
-
-        // Stage for SCM Checkout
-        stage('SCM Checkout') {
-            steps {
-                checkout scm  // This will check out the code from the repository
             }
         }
 
