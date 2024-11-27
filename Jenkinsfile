@@ -18,12 +18,12 @@ pipeline {
         stage('Track Node') {
             steps {
                 echo "Running on node: ${env.NODE_NAME}"
+                sh '/usr/bin/git --version'
             }
         }
         stage('SCM Checkout') {
             steps {
                 checkout scm
-                
             }
         }
         stage('Get Triggered User Email') {
