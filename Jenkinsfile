@@ -21,6 +21,11 @@ pipeline {
                 sh '/usr/bin/git --version'
             }
         }
+        stage('Git Version') {
+            steps {
+                sh 'git --version'
+            }
+        }
         stage('SCM Checkout') {
             steps {
                 checkout scm
