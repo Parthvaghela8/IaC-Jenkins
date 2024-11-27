@@ -25,12 +25,15 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Get Pusher Email') {
+        stage('Get Triggered User Email') {
             steps {
                 script {
-                    // Set the environment variable dynamically
-                    env.PUSHER_EMAIL = env.GIT_AUTHOR_EMAIL ?: 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
-                    echo "Pusher Email: ${env.PUSHER_EMAIL}"
+                    def userEmail = 'default@example.com'
+                    if (env.GITHUB_ACTOR) {
+                        // You can query GitHub's API to get the user's email
+                        userEmail = sh(script: "curl -s https://api.github.com/users/${env.GITHUB_ACTOR} | jq -r .email", returnStdout: true).trim()
+                    }
+                    echo "Triggered user email: ${userEmail}"
                 }
             }
         }
@@ -82,18 +85,17 @@ pipeline {
     }
 }
 
-// Function to send email using the Email Extension plugin
+// Function to send email using default Jenkins email notification
 def sendEmail(String recipient, String jobName, String buildNumber, String buildResult) {
     def subject = "Job '${jobName}' (${buildNumber}) ${buildResult ?: 'Unstable'}"
     def body = generateEmailBody(jobName, buildNumber, buildResult)
 
-   emailext(
-    to: recipient,
-    subject: subject,
-    body: body
-    )
-
+    // Use Jenkins default mail functionality
+    mail to: recipient,
+         subject: subject,
+         body: body
 }
+
 
 // Function to generate email body based on a template
 def generateEmailBody(String jobName, String buildNumber, String buildResult) {
