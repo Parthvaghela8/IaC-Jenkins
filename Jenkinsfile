@@ -35,6 +35,7 @@ pipeline {
                         // Use commit email (first priority)
                         userEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL
                     }
+                    echo userEmail;
                 }
             }
         }
