@@ -17,7 +17,11 @@ pipeline {
     stages {
         stage('SCM Checkout') {
             steps {
-                checkout scm  // Git will be used here from the EC2 agent
+                script {
+                    // Use the correct path to Git on the EC2 agent
+                    sh '/usr/bin/git clone https://github.com/Parthvaghela8/IaC-Jenkins.git'
+                }
+                // checkout scm  // Git will be used here from the EC2 agent
             }
         }
 
