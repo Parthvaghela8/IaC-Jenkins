@@ -29,14 +29,12 @@ pipeline {
             steps {
                 script {
                     def userEmail = 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
-                    // If it's a GitHub trigger, try fetching the email using the GitHub API
-                    if (env.GITHUB_ACTOR) {
-                        // Query GitHub API to get the user's email
-                        userEmail = sh(script: "curl -s https://api.github.com/users/${env.GITHUB_ACTOR} | jq -r .email", returnStdout: true).trim()
+
+                    // Check if it's a Git-based trigger (commit)
+                    if (env.GIT_COMMITTER_EMAIL || env.GIT_AUTHOR_EMAIL) {
+                        // Use commit email (first priority)
+                        userEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL
                     }
-                    echo "Triggered user email: ${userEmail}"
-                    // Set the environment variable to userEmail
-                    env.PUSHER_EMAIL = userEmail
                 }
             }
         }
