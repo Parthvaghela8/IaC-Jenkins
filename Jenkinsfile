@@ -5,20 +5,22 @@ properties([
             name: 'Environment'
         ),
         choice(
-            choices: ['plan', 'apply', 'destroy'], 
+            choices: ['plan', 'apply', 'destroy'],
             name: 'Terraform_Action'
         )
     ])
 ])
 
 pipeline {
+    agent { label 'ec2' }  // The entire pipeline will run on the EC2 agent
+
     stages {
         stage('SCM Checkout') {
-            agent { label 'ec2' }
             steps {
-                checkout scm
+                checkout scm  // Git will be used here from the EC2 agent
             }
         }
+
         stage('Track Node') {
             steps {
                 script {
@@ -26,28 +28,33 @@ pipeline {
                 }
             }
         }
+
         stage('Get Committer Email') {
             steps {
                 script {
+                    // Running git log on the EC2 agent to get the committer email
                     env.COMMITTER_EMAIL = sh(script: "git log -1 --pretty=format:'%ae'", returnStdout: true).trim()
                     echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
                 }
             }
         }
+
         stage('Init') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    sh 'terraform init'
+                    sh 'terraform init'  // Terraform will run on EC2 agent
                 }
             }
         }
+
         stage('Validate') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    sh 'terraform validate'
+                    sh 'terraform validate'  // Terraform validate will run on EC2 agent
                 }
             }
         }
+
         stage('Action') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
@@ -66,7 +73,7 @@ pipeline {
                             default:
                                 error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
                         }
-                        sh actionCmd
+                        sh actionCmd  // Terraform action will run on EC2 agent
                     }
                 }
             }
