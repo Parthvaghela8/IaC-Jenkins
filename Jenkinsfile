@@ -87,12 +87,12 @@ def sendEmail(String recipient, String jobName, String buildNumber, String build
     def subject = "Job '${jobName}' (${buildNumber}) ${buildResult ?: 'Unstable'}"
     def body = generateEmailBody(jobName, buildNumber, buildResult)
 
-    emailext(
-        to: recipient,
-        subject: subject,
-        body: body,
-        attachLog: true
+   emailext(
+    to: recipient,
+    subject: subject,
+    body: body
     )
+
 }
 
 // Function to generate email body based on a template
