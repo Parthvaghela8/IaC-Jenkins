@@ -34,54 +34,21 @@ pipeline {
         stage('Get Triggered User Email') {
             steps {
                 script {
-                    def committerEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL 
+                    // Try to retrieve the commit author's email from the SCM trigger
+                    def committerEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL ?: 'unknown@example.com'
                     echo "Committer Email: ${committerEmail}"
+                    // Store email for later use in post action
+                    currentBuild.description = "Triggered by ${committerEmail}"
                 }
             }
         }
-    //     stage('Init') {
-    //         steps {
-    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-    //                 sh 'terraform init'
-    //             }
-    //         }
-    //     }
-    //     stage('Validate') {
-    //         steps {
-    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-    //                 sh 'terraform validate'
-    //             }
-    //         }
-    //     }
-    //     stage('Action') {
-    //         steps {
-    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-    //                 script {
-    //                     def actionCmd = ""
-    //                     switch (params.Terraform_Action) {
-    //                         case 'plan':
-    //                             actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
-    //                             break
-    //                         case 'apply':
-    //                             actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
-    //                             break
-    //                         case 'destroy':
-    //                             actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
-    //                             break
-    //                         default:
-    //                             error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
-    //                     }
-    //                     sh actionCmd
-    //                 }
-    //             }
-    //         }
-    //     }
     }
 
     post {
         always {
             script {
-                // Ensure that the email recipient is correctly passed
+                // Ensure the email recipient is correctly passed from the SCM trigger stage
+                def userEmail = currentBuild.description?.replace("Triggered by ", "") ?: "default@example.com"
                 sendEmail(userEmail, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
             }
         }
