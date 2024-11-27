@@ -14,12 +14,7 @@ pipeline {
             )
         ])
     ])
-
-    tools {
-        // Define the tool path for Git to avoid Jenkins using the master node's Git
-        git 'git' // You can set the Git installation if needed or leave this empty if Git is in PATH
-    }
-
+    
     stages {
         // Stage to track the node the job is running on
         stage('Track Node') {
