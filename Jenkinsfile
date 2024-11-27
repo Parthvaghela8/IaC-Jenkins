@@ -22,7 +22,7 @@ pipeline {
         }
         stage('SCM Checkout') {
             steps {
-                checkout scm
+                // checkout scm
                  script {
                     echo "GIT_COMMITTER_EMAIL: ${env.GIT_COMMITTER_EMAIL}"
                     echo "GIT_AUTHOR_EMAIL: ${env.GIT_AUTHOR_EMAIL}"
