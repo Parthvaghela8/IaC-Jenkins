@@ -14,11 +14,6 @@ properties([
 pipeline {
     agent { label 'ec2' }
 
-    environment {
-        // Extract GIT_AUTHOR_EMAIL if set by Jenkins
-        env.PUSHER_EMAIL = env.GIT_AUTHOR_EMAIL ?: 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
-    }
-
     stages {
         stage('Track Node') {
             steps {
@@ -28,8 +23,13 @@ pipeline {
         stage('SCM Checkout') {
             steps {
                 checkout scm
-                // Ensure environment variables are populated by SCM plugin
+            }
+        }
+        stage('Get Pusher Email') {
+            steps {
                 script {
+                    // Set the environment variable dynamically
+                    env.PUSHER_EMAIL = env.GIT_AUTHOR_EMAIL ?: 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
                     echo "Pusher Email: ${env.PUSHER_EMAIL}"
                 }
             }
@@ -91,7 +91,7 @@ def sendEmail(String recipient, String jobName, String buildNumber, String build
         to: recipient,
         subject: subject,
         body: body,
-        attachLog: true  // Optional: Attach build log for detailed information
+        attachLog: true
     )
 }
 
