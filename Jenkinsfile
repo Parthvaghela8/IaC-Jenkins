@@ -22,26 +22,15 @@ pipeline {
         }
         stage('SCM Checkout') {
             steps {
-                // checkout scm
-                 script {
-                    echo "GIT_COMMITTER_EMAIL: ${env.GIT_COMMITTER_EMAIL}"
-                    echo "GIT_AUTHOR_EMAIL: ${env.GIT_AUTHOR_EMAIL}"
-                }
+                checkout scm
+                
             }
         }
         stage('Get Triggered User Email') {
             steps {
                 script {
-                    def userEmail = 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
-
-                    // Check if it's a Git-based trigger (commit)
-                    if (env.GIT_COMMITTER_EMAIL || env.GIT_AUTHOR_EMAIL) {
-                        // Use commit email (first priority)
-                        userEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL
-                    }
-                    env.GIT_COMMITTER_EMAIL;
-                    env.GIT_AUTHOR_EMAIL;
-                    echo userEmail;
+                    def committerEmail = env.GIT_COMMITTER_EMAIL ?: env.GIT_AUTHOR_EMAIL 
+                    echo "Committer Email: ${committerEmail}"
                 }
             }
         }
