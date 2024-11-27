@@ -14,23 +14,24 @@ properties([
 pipeline {
     agent { label 'ec2' }
 
-    environment {
-        // Extract GIT_AUTHOR_EMAIL if set by Jenkins
-        PUSHER_EMAIL = env.GIT_AUTHOR_EMAIL ?: 'vaghela.parthbhai.dcs24@vnsgu.ac.in'
-    }
-
     stages {
         stage('Track Node') {
             steps {
-                echo "Running on node: ${env.NODE_NAME}"
+                script {
+                    echo "Running on node: ${env.NODE_NAME}"
+                }
             }
         }
         stage('SCM Checkout') {
             steps {
                 checkout scm
-                // Ensure environment variables are populated by SCM plugin
+            }
+        }
+        stage('Get Committer Email') {
+            steps {
                 script {
-                    echo "Pusher Email: ${env.PUSHER_EMAIL}"
+                    env.COMMITTER_EMAIL = sh(script: "git log -1 --pretty=format:'%ae'", returnStdout: true).trim()
+                    echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
                 }
             }
         }
@@ -76,28 +77,23 @@ pipeline {
     post {
         always {
             script {
-                sendEmail(env.PUSHER_EMAIL, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+                sendEmail(env.COMMITTER_EMAIL ?: 'default@example.com', env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
             }
         }
     }
 }
 
-// Function to send email using the Email Extension plugin
+// Function to send email
 def sendEmail(String recipient, String jobName, String buildNumber, String buildResult) {
     def subject = "Job '${jobName}' (${buildNumber}) ${buildResult ?: 'Unstable'}"
     def body = generateEmailBody(jobName, buildNumber, buildResult)
 
-    emailext(
-        to: recipient,
-        subject: subject,
-        body: body,
-        attachLog: true  // Optional: Attach build log for detailed information
-    )
+    mail to: recipient, subject: subject, body: body
 }
 
 // Function to generate email body based on a template
 def generateEmailBody(String jobName, String buildNumber, String buildResult) {
-    return """
+    def template = """
     Hello,
 
     This is a notification regarding your Jenkins job:
@@ -110,5 +106,6 @@ def generateEmailBody(String jobName, String buildNumber, String buildResult) {
 
     Regards,
     Jenkins
-    """.stripIndent()
+    """
+    return template.stripIndent()
 }
