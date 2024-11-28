@@ -69,8 +69,8 @@ jobs:
           response_code=$(curl -w "%{http_code}" -s -o /dev/null -X POST "${{ env.JENKINS_URL }}/job/${{ env.JENKINS_JOB }}/buildWithParameters" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" \
           --data-urlencode "environment=${{ env.ENVIRONMENT }}" \
-          --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}") \
-          --data-urlencode "committer_email=${{ env.COMMITTER_EMAIL }}"
+          --data-urlencode "Terraform_Action=${{ env.TERRAFORM_ACTION }}" \
+          --data-urlencode "committer_email=${{ env.COMMITTER_EMAIL }}")
 
 
           # Log the HTTP status code for visibility
