@@ -57,29 +57,29 @@ pipeline {
                 }
             }
         }
-        stage('Action') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    script {
-                        def actionCmd = ""
-                        switch (params.Terraform_Action) {
-                            case 'plan':
-                                actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
-                                break
-                            case 'apply':
-                                actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
-                                break
-                            case 'destroy':
-                                actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
-                                break
-                            default:
-                                error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
-                        }
-                        sh actionCmd  // Terraform action will run on EC2 agent
-                    }
-                }
-            }
-        }
+        // stage('Action') {
+        //     steps {
+        //         withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+        //             script {
+        //                 def actionCmd = ""
+        //                 switch (params.Terraform_Action) {
+        //                     case 'plan':
+        //                         actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
+        //                         break
+        //                     case 'apply':
+        //                         actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
+        //                         break
+        //                     case 'destroy':
+        //                         actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+        //                         break
+        //                     default:
+        //                         error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+        //                 }
+        //                 sh actionCmd  // Terraform action will run on EC2 agent
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     post {
