@@ -24,7 +24,7 @@ pipeline {
             }
         }
 
-        stage('Get Committer Email') {
+        stage('Get Committer Emails') {
             steps {
                 script {
                     // Running git log on the EC2 agent to get the committer email
