@@ -53,11 +53,20 @@ pipeline {
                     }
 
                     env.COMMITTER_EMAIL = committerEmail ?: 'default@example.com'
-                    echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
-                    sh 'printenv' 
+                    echo "Retrieved Committer Emails: ${env.COMMITTER_EMAIL}"
                 }
             }
         }
+
+        stage('Debug Environment') {
+            steps {
+                script {
+                    sh 'printenv'  // Print all environment variables
+                }
+            }
+        }
+}
+
 
     }
 
