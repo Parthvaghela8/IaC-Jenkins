@@ -25,8 +25,13 @@ pipeline {
         }
         stage('Get Committer Email') {
             steps {
-                script {
-                    echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
+               script {
+                    def emails = currentBuild.changeSets.collect { changeSet ->
+                        changeSet.items.collect { it.authorEmail }
+                    }.flatten().unique().join(',')  // Collect unique emails and join them into a comma-separated string
+
+                    env.COMMITTER_EMAILS = emails ?: 'default@example.com'
+                    echo "Retrieved Committer Emails: ${env.COMMITTER_EMAILS}"
                 }
             }
         }
