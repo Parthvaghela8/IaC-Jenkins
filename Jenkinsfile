@@ -37,25 +37,28 @@ pipeline {
         stage('Get Committer Email') {
             steps {
                 script {
-                    // Extract email from the change set
                     def committerEmail = ''
                     def changeSets = currentBuild.changeSets
-                    if (changeSets && changeSets.size() > 0) {
-                        def entries = changeSets[0].items
-                        if (entries && entries.size() > 0) {
-                            committerEmail = entries[0].authorEmail
+
+                    for (changeSet in changeSets) {
+                        for (entry in changeSet.items) {
+                            committerEmail = entry.authorEmail
+                            if (committerEmail) {
+                                break
+                            }
+                        }
+                        if (committerEmail) {
+                            break
                         }
                     }
 
-                    if (committerEmail) {
-                        env.COMMITTER_EMAIL = committerEmail
-                    } else {
-                        env.COMMITTER_EMAIL = 'default@example.com'  // Fallback email
-                    }
+                    env.COMMITTER_EMAIL = committerEmail ?: 'default@example.com'
                     echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
+                    sh 'printenv' 
                 }
             }
         }
+
     }
 
 
@@ -100,13 +103,13 @@ pipeline {
     //     }
     // }
 
-    post {
-        always {
-            script {
-                sendEmail(env.COMMITTER_EMAIL ?: 'default@example.com', env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
-            }
-        }
-    }
+    // post {
+    //     always {
+    //         script {
+    //             sendEmail(env.COMMITTER_EMAIL ?: 'default@example.com', env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+    //         }
+    //     }
+    // }
 }
 
 // Function to send email
