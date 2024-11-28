@@ -37,35 +37,10 @@ pipeline {
         stage('Get Committer Email') {
             steps {
                 script {
-                    def committerEmail = ''
-                    def changeSets = currentBuild.changeSets
-
-                    for (changeSet in changeSets) {
-                        for (entry in changeSet.items) {
-                            committerEmail = entry.authorEmail
-                            if (committerEmail) {
-                                break
-                            }
-                        }
-                        if (committerEmail) {
-                            break
-                        }
-                    }
-
-                    env.COMMITTER_EMAIL = committerEmail ?: 'default@example.com'
                     echo "Retrieved Committer Emails: ${env.COMMITTER_EMAIL}"
                 }
             }
         }
-
-        stage('Debug Environment') {
-            steps {
-                script {
-                    sh 'printenv'  // Print all environment variables
-                }
-            }
-        }
-
     }
 
 
