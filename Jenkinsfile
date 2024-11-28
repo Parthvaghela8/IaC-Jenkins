@@ -2,7 +2,8 @@ properties([
     parameters([
         string(
             defaultValue: 'dev',
-            name: 'Environment'
+            name: 'Environment',
+            email: 'committer_email'
         ),
         choice(
             choices: ['plan', 'apply', 'destroy'],
@@ -26,12 +27,13 @@ pipeline {
         stage('Get Committer Email') {
             steps {
                script {
-                    def emails = currentBuild.changeSets.collect { changeSet ->
+                    def committerEmail = currentBuild.changeSets.collect { changeSet ->
                         changeSet.items.collect { it.authorEmail }
-                    }.flatten().unique().join(',')  // Collect unique emails and join them into a comma-separated string
+                    }.flatten().find { it }  // Gets the first email
 
-                    env.COMMITTER_EMAILS = emails ?: 'default@example.com'
-                    echo "Retrieved Committer Emails: ${env.COMMITTER_EMAILS}"
+                    env.COMMITTER_EMAIL = committerEmail ?: 'default@example.com'
+                    echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
+                    echo "Email to send notification: ${params.committer_email}"
                 }
             }
         }
