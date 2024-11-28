@@ -3,7 +3,7 @@ properties([
         string(
             defaultValue: 'dev',
             name: 'Environment',
-            email: 'committer_email'
+            name: 'committer_email'
         ),
         choice(
             choices: ['plan', 'apply', 'destroy'],
