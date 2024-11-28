@@ -1,6 +1,6 @@
 {
     "environment": "dev",
-    "terraform_action": "plan",
+    "terraform_action": "apply",
     "jenkins_job": "IaC",
     "jenkins_url": "https://1086-2402-a00-173-e1b-19fb-a652-41c7-e71e.ngrok-free.app"
   }
