@@ -34,46 +34,70 @@ pipeline {
             }
         }
 
-        stage('Init') {
+        stage('Get Committer Email') {
             steps {
-                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    sh 'terraform init'  // Terraform will run on EC2 agent
-                }
-            }
-        }
-
-        stage('Validate') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    sh 'terraform validate'  // Terraform validate will run on EC2 agent
-                }
-            }
-        }
-
-        stage('Action') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    script {
-                        def actionCmd = ""
-                        switch (params.Terraform_Action) {
-                            case 'plan':
-                                actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
-                                break
-                            case 'apply':
-                                actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
-                                break
-                            case 'destroy':
-                                actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
-                                break
-                            default:
-                                error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+                script {
+                    // Extract email from the change set
+                    def committerEmail = ''
+                    def changeSets = currentBuild.changeSets
+                    if (changeSets && changeSets.size() > 0) {
+                        def entries = changeSets[0].items
+                        if (entries && entries.size() > 0) {
+                            committerEmail = entries[0].authorEmail
                         }
-                        sh actionCmd  // Terraform action will run on EC2 agent
                     }
+
+                    if (committerEmail) {
+                        env.COMMITTER_EMAIL = committerEmail
+                    } else {
+                        env.COMMITTER_EMAIL = 'default@example.com'  // Fallback email
+                    }
+                    echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
                 }
             }
         }
-    }
+
+
+    //     stage('Init') {
+    //         steps {
+    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+    //                 sh 'terraform init'  // Terraform will run on EC2 agent
+    //             }
+    //         }
+    //     }
+
+    //     stage('Validate') {
+    //         steps {
+    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+    //                 sh 'terraform validate'  // Terraform validate will run on EC2 agent
+    //             }
+    //         }
+    //     }
+
+    //     stage('Action') {
+    //         steps {
+    //             withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+    //                 script {
+    //                     def actionCmd = ""
+    //                     switch (params.Terraform_Action) {
+    //                         case 'plan':
+    //                             actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
+    //                             break
+    //                         case 'apply':
+    //                             actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
+    //                             break
+    //                         case 'destroy':
+    //                             actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+    //                             break
+    //                         default:
+    //                             error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+    //                     }
+    //                     sh actionCmd  // Terraform action will run on EC2 agent
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     post {
         always {
