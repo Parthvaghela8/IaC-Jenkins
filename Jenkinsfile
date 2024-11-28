@@ -25,62 +25,71 @@ pipeline {
                 }
             }
         }
+
         stage('Get Committer Email') {
             steps {
-               script {
+                script {
                     def committerEmail = currentBuild.changeSets.collect { changeSet ->
                         changeSet.items.collect { it.authorEmail }
-                    }.flatten().find { it }  // Gets the first email
+                    }.flatten().find { it }  // Get the first email from the change set
 
                     env.COMMITTER_EMAIL = committerEmail ?: 'default@example.com'
                     echo "Retrieved Committer Email: ${env.COMMITTER_EMAIL}"
-                    echo "Email to send notification: ${params.committer_email}"
                 }
             }
         }
-        stage('Init') {
+
+        stage('Terraform Init') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    sh 'terraform init'  // Terraform will run on EC2 agent
+                    echo "Initializing Terraform..."
+                    sh 'terraform init'  // Terraform init will run on EC2 agent
                 }
             }
         }
-        stage('Validate') {
+
+        stage('Terraform Validate') {
             steps {
                 withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                    echo "Validating Terraform configuration..."
                     sh 'terraform validate'  // Terraform validate will run on EC2 agent
                 }
             }
         }
-        // stage('Action') {
-        //     steps {
-        //         withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-        //             script {
-        //                 def actionCmd = ""
-        //                 switch (params.Terraform_Action) {
-        //                     case 'plan':
-        //                         actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
-        //                         break
-        //                     case 'apply':
-        //                         actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
-        //                         break
-        //                     case 'destroy':
-        //                         actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
-        //                         break
-        //                     default:
-        //                         error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
-        //                 }
-        //                 sh actionCmd  // Terraform action will run on EC2 agent
-        //             }
-        //         }
-        //     }
-        // }
+
+        stage('Terraform Action') {
+            steps {
+                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                    script {
+                        def actionCmd = ""
+                        switch (params.Terraform_Action) {
+                            case 'plan':
+                                actionCmd = "terraform plan -var-file=${params.Environment}.tfvars"
+                                break
+                            case 'apply':
+                                actionCmd = "terraform apply -var-file=${params.Environment}.tfvars -auto-approve"
+                                break
+                            case 'destroy':
+                                actionCmd = "terraform destroy -var-file=${params.Environment}.tfvars -auto-approve"
+                                break
+                            default:
+                                error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+                        }
+                        echo "Executing Terraform command: ${actionCmd}"
+                        sh actionCmd  // Run selected Terraform action on EC2 agent
+                    }
+                }
+            }
+        }
     }
 
     post {
         always {
             script {
-                sendEmail(env.COMMITTER_EMAIL ?: 'default@example.com', env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+                // Send an email notification regardless of the build result
+                if (env.COMMITTER_EMAIL && env.COMMITTER_EMAIL != 'default@example.com') {
+                    sendEmail(env.COMMITTER_EMAIL, env.JOB_NAME, env.BUILD_NUMBER, currentBuild.result)
+                }
             }
         }
     }
@@ -96,7 +105,7 @@ def sendEmail(String recipient, String jobName, String buildNumber, String build
 
 // Function to generate email body based on a template
 def generateEmailBody(String jobName, String buildNumber, String buildResult) {
-    def template = """
+    return """
     Hello,
 
     This is a notification regarding your Jenkins job:
@@ -109,6 +118,5 @@ def generateEmailBody(String jobName, String buildNumber, String buildResult) {
 
     Regards,
     Jenkins
-    """
-    return template.stripIndent()
+    """.stripIndent()
 }
