@@ -3,14 +3,17 @@ properties([
         string(
             defaultValue: 'dev',
             name: 'Environment',
+            description: 'The environment for Terraform operations'
         ),
         string(
             name: 'committer_email',
             defaultValue: '',
-            description: 'Email of the committer'),
+            description: 'Email of the committer'
+        ),
         choice(
             choices: ['plan', 'apply', 'destroy'],
-            name: 'Terraform_Action'
+            name: 'Terraform_Action',
+            description: 'Select the Terraform action to perform'
         )
     ])
 ])
